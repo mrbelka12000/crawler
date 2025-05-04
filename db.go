@@ -56,6 +56,22 @@ func connect(ctx context.Context) (*dbConn, error) {
 		}
 		return nil, err
 	}
+
+	if err := conn.Exec(ctx, `
+CREATE TABLE IF NOT EXISTS  my_app_db.main
+(
+    parent String,
+    child String,
+    content BYTEA,
+    created_at DateTime
+)
+    ENGINE = MergeTree()
+PRIMARY KEY (parent, child);
+
+`); err != nil {
+		return nil, err
+	}
+
 	return &dbConn{
 		conn: conn,
 	}, nil

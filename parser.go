@@ -105,10 +105,13 @@ func (p *Parser) parse(ctx context.Context, entryPoint string) error {
 
 func (p *Parser) sendRequest(ctx context.Context, ch chan tmpRec) {
 	curr := <-ch
-	if !p.cache.IsUsed(ctx, curr.curr) {
+	if p.cache.IsUsed(ctx, curr.curr) {
 		fmt.Printf("Already used link: %s\n", curr.curr)
 		return
 	}
+
+	fmt.Printf("Parsing %s\n", curr.curr)
+	p.cache.Set(ctx, curr.curr)
 
 	resp, err := http.Get(curr.curr)
 	if err != nil {
@@ -128,7 +131,9 @@ func (p *Parser) sendRequest(ctx context.Context, ch chan tmpRec) {
 
 	urls := extractURLs(body)
 	for _, url := range urls {
-		ch <- tmpRec{parent: curr.curr, curr: url}
+		if !p.cache.IsUsed(ctx, url) {
+			ch <- tmpRec{parent: curr.curr, curr: url}
+		}
 	}
 
 	p.mx.Lock()
@@ -149,4 +154,6 @@ func (p *Parser) sendRequest(ctx context.Context, ch chan tmpRec) {
 	}
 
 	p.mx.Unlock()
+
+	fmt.Printf("Finished parsing %s\n", curr.curr)
 }

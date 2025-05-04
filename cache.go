@@ -35,7 +35,6 @@ func ConnectToRedis() (*Cache, error) {
 func (c *Cache) IsUsed(ctx context.Context, key string) bool {
 	_, err := c.redisClient.Get(ctx, key).Result()
 	if errors.Is(err, redis.Nil) {
-		c.Set(ctx, key)
 		return false
 	}
 

@@ -20,5 +20,5 @@ func main() {
 
 	parser := NewParser(db, cache)
 
-	parser.Walk(ctx, "https://docs.docker.com/reference/cli/docker/compose/down/")
+	parser.Walk(ctx, "https://github.com/")
 }
