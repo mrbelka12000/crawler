@@ -115,16 +115,19 @@ func (p *Parser) sendRequest(ctx context.Context, ch chan tmpRec) {
 
 	resp, err := http.Get(curr.curr)
 	if err != nil {
-		p.cache.Set(ctx, curr.curr)
 		fmt.Printf("Failed to send request: %s\n", curr.curr)
 		return
 	}
 
 	defer resp.Body.Close()
 
+	if resp.StatusCode < 200 || resp.StatusCode > 299 {
+		fmt.Printf("Failed to send request: %s, Invalid status code: %v \n", curr.curr, resp.StatusCode)
+		return
+	}
+
 	body, err := io.ReadAll(resp.Body)
 	if err != nil {
-		p.cache.Set(ctx, curr.curr)
 		fmt.Printf("Failed to read body: %s\n", curr.curr)
 		return
 	}
